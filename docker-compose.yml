@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  temp-recorder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temp-recorder
+    restart: unless-stopped
+    environment:
+      # WSL2: benutze das entsprechende /dev/ttyS* Device (z.B. /dev/ttyS3 für COM3)
+      - SERIAL_PORT=/dev/ttyS2
+      - BAUD_RATE=9600
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USER=tempuser
+      - DB_PASSWORD=${DB_PASSWORD:-changeme}
+      - DB_NAME=temperatures
+    devices:
+      # Für Windows + WSL2: mappe das WSL-Gerät (COM3 -> /dev/ttyS3)
+      - "/dev/ttyS2:/dev/ttyS2"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - temp-network
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: temp-mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=temperatures
+      - MYSQL_USER=tempuser
+      - MYSQL_PASSWORD=${DB_PASSWORD:-changeme}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      # Optional: Für externe Zugriffe
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - temp-network
+
+  # Optional: Adminer für Datenbankzugriff
+  adminer:
+    image: adminer:latest
+    container_name: temp-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mariadb
+    networks:
+      - temp-network
+
+volumes:
+  mariadb-data:
+    driver: local
+
+networks:
+  temp-network:
+    driver: bridge
