@@ -21,8 +21,8 @@ func main() {
         log.Fatalf("Fehler beim Laden der Konfiguration: %v", err)
     }
 
-    log.Printf("Konfiguration geladen: Port=%s, Baudrate=%d, DB=%s@%s/%s",
-        cfg.SerialPort, cfg.BaudRate, cfg.DBUser, cfg.DBHost, cfg.DBName)
+    log.Printf("Konfiguration geladen: Port=%s, Baudrate=%d, Intervall=%ds, DB=%s@%s/%s",
+        cfg.SerialPort, cfg.BaudRate, cfg.ReadInterval, cfg.DBUser, cfg.DBHost, cfg.DBName)
 
     // Datenbankverbindung herstellen
     db, err := database.New(cfg)

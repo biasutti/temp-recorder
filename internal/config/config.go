@@ -9,8 +9,9 @@ import (
 // Config enthält alle Konfigurationsparameter
 type Config struct {
     // Serielle Schnittstelle
-    SerialPort string
-    BaudRate   int
+    SerialPort   string
+    BaudRate     int
+    ReadInterval int // Leseintervall in Sekunden (Entprellung)
 
     // Datenbank
     DBHost     string
@@ -24,8 +25,9 @@ type Config struct {
 func Load() (*Config, error) {
     cfg := &Config{
         // Standardwerte
-        SerialPort: getEnv("SERIAL_PORT", "/dev/ttyUSB0"),
-        BaudRate:   getEnvAsInt("BAUD_RATE", 9600),
+        SerialPort:   getEnv("SERIAL_PORT", "/dev/ttyUSB0"),
+        BaudRate:     getEnvAsInt("BAUD_RATE", 9600),
+        ReadInterval: getEnvAsInt("READ_INTERVAL", 60),
         DBHost:     getEnv("DB_HOST", "localhost"),
         DBPort:     getEnv("DB_PORT", "3306"),
         DBUser:     getEnv("DB_USER", "tempuser"),
